@@ -1,13 +1,15 @@
 import test from 'ava';
 
+import { mapCategoryProviderJohn } from '../CompanyMappers/CompanyJohnDoeMapper';
 import { CORRECT } from '../correctResult';
 import { getCategories } from '../mockedApi';
 import { categoryTree } from '../task';
-import { getCategoryOrder } from '../utils';
+import { getCategoryOrder,  } from '../utils';
 
 
 test('should return the same result as currectResult', async (t) => {
-  const result = await categoryTree(getCategories)
+  const categories = await getCategories();
+  const result = categoryTree(categories.data, mapCategoryProviderJohn);
   t.deepEqual(result, CORRECT)
 });
 

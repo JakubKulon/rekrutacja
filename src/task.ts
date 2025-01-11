@@ -1,5 +1,4 @@
-import { Category } from './mockedApi';
-import { mapCategory, setCategoriesForHomepage } from './utils';
+import { setCategoriesForHomepage } from './utils';
 
 export interface CategoryListElement {
   name: string;
@@ -10,25 +9,24 @@ export interface CategoryListElement {
   showOnHome: boolean;
 }
 
-export interface GetDataArg {
-  (): Promise<{ data: Category[] } | null>;
+interface CategoryMapperArg<T> {
+  (item: T, toShowOnHome: Set<number>): CategoryListElement;
 }
 
-export const categoryTree = async (
-  getData: GetDataArg
-): Promise<CategoryListElement[]> => {
-  const res = await getData();
-
-  if (!res.data) {
+export const categoryTree = <T>(
+  data: T[], categoryMapper: CategoryMapperArg<T>
+): CategoryListElement[] => {
+  if (!data || !data.length) {
     return [];
   }
 
-  const toShowOnHome: Set<number> = new Set
+  const toShowOnHome: Set<number> = new Set();
 
-  const mappedCategories = res.data.map((category) => mapCategory(category, toShowOnHome))
+  const mappedCategories = data.map((item) => categoryMapper(item, toShowOnHome));
 
   const result = setCategoriesForHomepage(mappedCategories, toShowOnHome);
  
-  return result
+  return result;
 };
+
 
