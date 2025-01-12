@@ -1,5 +1,3 @@
-import { setCategoriesForHomepage } from './utils';
-
 export interface CategoryListElement {
   name: string;
   id: number;
@@ -9,24 +7,49 @@ export interface CategoryListElement {
   showOnHome: boolean;
 }
 
-interface CategoryMapperArg<T> {
+interface CategoryMapper<T> {
   (item: T, toShowOnHome: Set<number>): CategoryListElement;
 }
 
 export const categoryTree = <T>(
-  data: T[], categoryMapper: CategoryMapperArg<T>
+  data: T[],
+  categoryMapper: CategoryMapper<T>
 ): CategoryListElement[] => {
   if (!data || !data.length) {
     return [];
   }
 
-  const toShowOnHome: Set<number> = new Set();
+  const categoriesToShowOnHomepage: Set<number> = new Set();
 
-  const mappedCategories = data.map((item) => categoryMapper(item, toShowOnHome));
+  const mappedCategories = data.map((item) =>
+    categoryMapper(item, categoriesToShowOnHomepage)
+  );
 
-  const result = setCategoriesForHomepage(mappedCategories, toShowOnHome);
- 
+  const result = setCategoriesForHomepage(
+    mappedCategories,
+    categoriesToShowOnHomepage
+  );
+
   return result;
 };
 
+export function setCategoriesForHomepage(
+  result: CategoryListElement[],
+  toShowOnHome: Set<number>
+) {
+  if (result.length <= 5) {
+    return result.map((category) => ({ ...category, showOnHome: true }));
+  }
 
+  if (toShowOnHome.size > 0) {
+    return result.map((category) => ({
+      ...category,
+      showOnHome: toShowOnHome.has(category.id),
+    }));
+  }
+
+  return result.map((category, index) => ({
+    ...category,
+    showOnHome: index > 3,
+  }));
+}
